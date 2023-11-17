@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4 u</title>
+    <title>Mobile Friendly Cards</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -24,8 +24,6 @@
             transform: rotateZ(-5deg);
             box-shadow: 1px 15px 20px 0px rgba(0, 0, 0, 0.5);
             position: absolute;
-            cursor: grab;
-            touch-action: pan-y;
         }
 
         .paper.heart {
@@ -42,10 +40,6 @@
 
         .paper.image p {
             font-size: 30px;
-            font-family: 'Zeyada';
-            color: rgb(0, 0, 100);
-            opacity: 0.75;
-            user-select: none;
         }
 
         img {
@@ -81,8 +75,8 @@
 
 <div class="paper heart"></div>
 <div class="paper image">
-    <p>Look at your face </p>
-    <p>your smile looks adorable. 😍 </p>
+    <p> and I fallen in</p>
+    <p>Love with You 😍 </p>
     <img src="images/1.jpg" alt="Romantic Photo 1">
 </div>
 <div class="paper image">
@@ -99,7 +93,7 @@
     <p class="p2">Person 😍</p>
 </div>
 <div class="paper">
-    <p class="p1">You are Cute and</p>
+    <p class="p1">You are Cute </p>
     <p class="p1">Amazing <span style="color: red !important;">❤️</span></p>
 </div>
 <div class="paper">
@@ -146,68 +140,55 @@
                 const angle = Math.atan2(dirNormalizedY, dirNormalizedX);
                 let degrees = (180 * angle) / Math.PI;
                 degrees = (360 + Math.round(degrees)) % 360;
+                if (this.rotating) {
+                    this.rotation = degrees;
+                }
 
-                paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) rotate(${degrees + this.rotation}deg)`;
+                if (this.holdingPaper) {
+                    if (!this.rotating) {
+                        this.currentPaperX += this.velX;
+                        this.currentPaperY += this.velY;
+                    }
+                    this.prevTouchX = this.touchMoveX;
+                    this.prevTouchY = this.touchMoveY;
 
-                this.prevTouchX = this.touchMoveX;
-                this.prevTouchY = this.touchMoveY;
+                    paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg)`;
+                }
             });
 
             paper.addEventListener('touchstart', (e) => {
+                if (this.holdingPaper) return;
                 this.holdingPaper = true;
-                this.rotating = false;
+
+                paper.style.zIndex = highestZ;
+                highestZ += 1;
+
                 this.touchStartX = e.touches[0].clientX;
                 this.touchStartY = e.touches[0].clientY;
                 this.prevTouchX = this.touchStartX;
                 this.prevTouchY = this.touchStartY;
             });
-
             paper.addEventListener('touchend', () => {
                 this.holdingPaper = false;
                 this.rotating = false;
             });
 
-            paper.addEventListener('mousedown', (e) => {
+            // For two-finger rotation on touch screens
+            paper.addEventListener('gesturestart', (e) => {
                 e.preventDefault();
-                this.holdingPaper = true;
-                this.rotating = false;
-                this.touchStartX = e.clientX;
-                this.touchStartY = e.clientY;
-                this.prevTouchX = this.touchStartX;
-                this.prevTouchY = this.touchStartY;
-
-                window.addEventListener('mousemove', this.handleMouseMove);
-                window.addEventListener('mouseup', this.handleMouseUp);
+                this.rotating = true;
             });
-
-            this.currentPaperX = Math.random() * window.innerWidth * 0.6 + window.innerWidth * 0.2;
-            this.currentPaperY = Math.random() * window.innerHeight * 0.6 + window.innerHeight * 0.2;
-            paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) rotate(${this.rotation}deg)`;
-            paper.style.zIndex = highestZ;
-            highestZ++;
-
-            setInterval(() => {
-                if (!this.holdingPaper) {
-                    this.currentPaperX += this.velX / 2;
-                    this.currentPaperY += this.velY / 2;
-
-                    paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) rotate(${this.rotation}deg)`;
-                }
-            }, 30);
+            paper.addEventListener('gestureend', () => {
+                this.rotating = false;
+            });
         }
     }
 
-    const papers = document.querySelectorAll('.paper');
-    papers.forEach((paper) => {
-        const newPaper = new Paper();
-        newPaper.init(paper);
-    });
+    const papers = Array.from(document.querySelectorAll('.paper'));
 
-    window.addEventListener('resize', () => {
-        papers.forEach((paper) => {
-            const newPaper = new Paper();
-            newPaper.init(paper);
-        });
+    papers.forEach((paper) => {
+        const p = new Paper();
+        p.init(paper);
     });
 </script>
 
